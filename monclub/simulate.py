@@ -30,12 +30,14 @@ for P in raw:
         if r<pw-pd/2: return 3,1,1
         if r<pw+pd/2: return 2,2,0
         return 1,3,-1
-    res={t:dict(up=0,down=0,ranks=collections.Counter(),byk=collections.defaultdict(lambda:[0,0,0])) for t in sqys}
+    res={t:dict(up=0,down=0,ranks=collections.Counter(),byk=collections.defaultdict(lambda:[0,0,0]),combo=collections.defaultdict(lambda:[0,0,0])) for t in sqys}
+    myf={t:[i for i,m in enumerate(fut) if t in (m['home'],m['away'])] for t in sqys}
     for _ in range(N):
         pts={t:base[t]["pts"] for t in teams}; wins=collections.Counter()
         S={t:strength[t]+random.gauss(0,80) for t in teams}
-        for m in fut:
-            hp,ap,r=play(m["home"],m["away"],S); pts[m["home"]]+=hp; pts[m["away"]]+=ap
+        outc=[None]*len(fut)
+        for i,m in enumerate(fut):
+            hp,ap,r=play(m["home"],m["away"],S); outc[i]=(m["home"],r); pts[m["home"]]+=hp; pts[m["away"]]+=ap
             if r==1: wins[m["home"]]+=1
             elif r==-1: wins[m["away"]]+=1
         order=sorted(teams,key=lambda t:(-pts[t],random.random()))
@@ -44,6 +46,8 @@ for P in raw:
             u=rk==1; d=rk>n-down
             R["up"]+=u; R["down"]+=d
             bk=R["byk"][wins[t]]; bk[0]+=1; bk[1]+=u; bk[2]+=d
+            key="".join({1:"V",0:"N",-1:"D"}[r if h==t else -r] for h,r in (outc[i] for i in myf[t]))
+            cb=R["combo"][key]; cb[0]+=1; cb[1]+=u; cb[2]+=d
     pool=dict(pool=P["poolName"],division=P["division"],fem=P["fem"],n=n,down=down,nopp=P["nopp"],
         teams={t:dict(name=teams[t],strength=round(strength[t]),**base[t]) for t in teams},
         played=[{k:m[k] for k in ("date","round","home","away","hp","ap","winner","draw","forfeit")} for m in P["played"]],
@@ -54,6 +58,7 @@ for P in raw:
         R=res[t]; nf=sum(1 for m in fut if t in (m["home"],m["away"]))
         pool["sqy"][t]=dict(up=R["up"]/N,down=R["down"]/N,remaining=nf,
             ranks={r:c/N for r,c in sorted(R["ranks"].items())},
+            combo={k:v for k,v in R["combo"].items()},
             byk=[dict(k=k,p=v[0]/N,up=v[1]/v[0],down=v[2]/v[0]) for k,v in sorted(R["byk"].items())],
             matches=[dict(opp=(m["away"] if m["home"]==t else m["home"]),home=m["home"]==t,date=m["date"],round=m["round"],
                 pwin=round(pwin(strength[t],strength[m["away"] if m["home"]==t else m["home"]]),3)) for m in fut if t in (m["home"],m["away"])])
