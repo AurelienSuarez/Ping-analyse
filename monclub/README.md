@@ -28,3 +28,12 @@ Club SQY PING : n° FFTT `08781477`, id API `40001473`.
 ## Brûlage
 
 `lineup.py` applique l'article II.112.1 des règlements sportifs FFTT 2026-2027 : 2 rencontres dans des équipes de numéro inférieur interdisent les équipes de numéro supérieur ; pas de passage entre deux équipes d'un club dans une même poule ; brûlage séparé messieurs / dames.
+
+## Site en ligne (GitHub Pages)
+
+Le site est servi depuis la branche `gh-pages` : https://aureliensuarez.github.io/Ping-analyse/
+
+Pour le mettre à jour après un nouveau calcul :
+
+    python3 make_standalone.py enjeux-sqy-ping.html /chemin/vers/gh-pages/index.html
+    # puis commit + push de la branche gh-pages
