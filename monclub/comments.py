@@ -20,60 +20,116 @@ def cond(s,mode,fix):
     return (g/n if n else None),n
 def comment(p,tid,mode):
     s=p["sqy"][tid]; ms=s["matches"]; N=sum(cb[0] for cb in s["combo"].values())
-    me=p["teams"][tid]; n=p["n"]; word="le maintien" if mode=="m" else "la montée"
+    me=p["teams"][tid]; n=p["n"]; upn=p.get("upn",1); down=p["down"]
+    word="le maintien" if mode=="m" else "la montée"; pron="le" if mode=="m" else "la"
     cur=(1-s["down"]) if mode=="m" else s["up"]
-    def oppdesc(m):
-        o=p["teams"][str(m["opp"])]; r=rank(p,str(m["opp"]))
-        tag=""
-        if mode=="m" and r>=n-3 and abs(o["pts"]-me["pts"])<=2: tag=", rival direct pour le maintien"
-        if mode=="u" and (r<=p["upn"]+1 or o["pts"]>=me["pts"]) : tag=", concurrent direct pour la 1re place" if p["upn"]==1 else ", concurrent direct pour les 2 places de montée"
-        return f'{"contre" if m["home"] else "à"} <b>{nm(o["name"])}</b> (J{m["round"]}{", "+fd(m["date"]) if m["date"] else ""} ; {"1er" if r==1 else str(r)+"e"}, {o["pts"]} pts{tag})'
-    def short(i): return nm(p["teams"][str(ms[i]["opp"])]["name"])
+    rk=rank(p,tid); place=lambda r:"1er" if r==1 else f"{r}e"
+    tn=lambda t:nm(p["teams"][str(t)]["name"])
+    pts=sorted(((v["pts"],k) for k,v in p["teams"].items()),reverse=True)
+    # --- situation
+    if mode=="m":
+        line=n-down; lp=pts[line-1][0]; nextp=pts[line][0]
+        if rk<=line:
+            gap=me["pts"]-nextp
+            pos=f"au-dessus de la zone de relégation, avec {gap} pt{'s' if gap>1 else ''} d'avance sur la {place(line+1)} place" if gap>0 else f"à égalité de points avec la {place(line+1)} place, la première place relégable"
+        else:
+            gap=lp-me["pts"]
+            pos=f"dans la zone de relégation, à {gap} pt{'s' if gap>1 else ''} de la {place(line)} place, la dernière qui sauve" if gap>0 else f"dans la zone de relégation, mais à égalité de points avec la {place(line)} place"
+    else:
+        lp=pts[upn-1][0]; nextp=pts[upn][0]
+        lab="la 1re place" if upn==1 else "la 2e place, la dernière qui fait monter"
+        if me["pts"]>=lp:
+            gap=me["pts"]-nextp
+            pos=(f"en position de montée, avec {gap} pt{'s' if gap>1 else ''} d'avance sur la {place(upn+1)} place" if gap>0 else f"en position de montée, mais à égalité de points avec la {place(upn+1)} place")
+        else:
+            gap=lp-me["pts"]; pos=f"à {gap} pt{'s' if gap>1 else ''} de {lab}"
+    home=sum(1 for m in ms if m["home"])
+    sit=(f"{label(p,tid)} est {place(rk)} sur {n} avec {me['pts']} pts ({me['V']} victoire{'s' if me['V']>1 else ''}, {me['N']} nul{'s' if me['N']>1 else ''}, {me['D']} défaite{'s' if me['D']>1 else ''}), {pos}. "
+         f"Il reste {len(ms)} rencontre{'s' if len(ms)>1 else ''}, dont {home} à domicile.")
+    # --- poids de chaque rencontre
     imp=[]
     for i,m in enumerate(ms):
         v,nv=cond(s,mode,{i:"V"}); d,nd=cond(s,mode,{i:"D"})
-        if v is None or d is None or nv<100 or nd<100: continue
-        imp.append(dict(i=i,v=v,d=d,pw=nv/N,gap=v-d))
-    if not imp: return f"<p>Plus grand-chose ne dépend des résultats de l'équipe : {word} est à {pc(cur)}.</p>"
-    # poids réel : écart victoire/défaite pondéré par l incertitude de la rencontre
-    imp.sort(key=lambda x:-x["gap"]*(x["pw"]*(1-x["pw"]))**0.5); k=imp[0]; out=[]
-    others=[x for x in range(len(ms)) if x!=k["i"]]
-    target=0.8 if mode=="m" else 0.5
-    best=None
-    for size in range(0,len(others)+1):
-        cands=[]
-        for S in itertools.combinations(others,size):
-            fix={k["i"]:"D",**{x:"V" for x in S}}; pr,nn=cond(s,mode,fix)
-            if pr is not None and nn>=50: cands.append((pr,S))
-        if cands:
-            pr,S=max(cands)
-            if pr>=target: best=(pr,S); break
-            last=(pr,S)
-    loser=short(k["i"]); pron="le" if mode=="m" else "la"
-    must=((k["d"]<0.5 and k["v"]>=0.7) if mode=="m" else (k["d"]<0.15 and k["v"]>=0.4)) and (best is None or len(best[1])==len(others))
-    out.append(f'{"<b>Il faut absolument gagner</b> " if must else "La rencontre décisive se joue "}{oppdesc(ms[k["i"]])}. '
-               f'Une victoire porte {word} à {pc(k["v"])}, une défaite {pron} ramène à {pc(k["d"])}'
-               f' (chances de victoire estimées : {pc(k["pw"])}).')
-    if best and not best[1]:
-        out.append(f"Même une défaite contre {loser} ne serait pas rédhibitoire ({word} resterait à {pc(best[0])}).")
-    elif best:
-        names=[short(x) for x in best[1]]; lst=names[0] if len(names)==1 else ", ".join(names[:-1])+" et "+names[-1]
-        out.append(f"En cas de défaite contre {loser}, il faudra battre {lst} : {word} serait alors à {pc(best[0])}.")
+        imp.append(dict(i=i,v=v if nv>=100 else None,d=d if nd>=100 else None,pw=m["pwin"] if True else 0,pws=nv/N,gap=(v-d) if (nv>=100 and nd>=100) else 0))
+    for x in imp: x["w"]=x["gap"]*(x["pws"]*(1-x["pws"]))**0.5
+    order=sorted(imp,key=lambda x:-x["w"]); k=order[0] if order and order[0]["w"]>0 else None
+    def tag(x):
+        if k and x["i"]==k["i"]: return '<span class="tag key">Décisive</span>'
+        if x["gap"]>=0.2 and x["w"]>=0.05: return '<span class="tag imp">Importante</span>'
+        if x["pws"]>=0.65: return '<span class="tag easy">Abordable</span>'
+        if x["pws"]<=0.35: return '<span class="tag hard">Difficile</span>'
+        return '<span class="tag">Ouverte</span>'
+    rows=[]
+    for x in imp:
+        m=ms[x["i"]]; o=p["teams"][str(m["opp"])]; r=rank(p,str(m["opp"]))
+        f=lambda y:pc(y) if y is not None else "—"
+        rows.append(f'<tr><td class="nw">J{m["round"]}<br><span class="muted">{fd(m["date"])}</span></td><td>{"Dom." if m["home"] else "Ext."} · <b>{tn(m["opp"])}</b><br><span class="muted">{place(r)}, {o["pts"]} pts</span></td>'
+                    f'<td class="c nw">{pc(x["pws"])}</td><td class="c nw">{f(x["v"])}</td><td class="c nw">{f(x["d"])}</td><td>{tag(x)}</td></tr>')
+    cal=(f'<div class="tw"><table class="cal"><thead><tr><th>Journée</th><th>Adversaire</th><th class="c">Chances de victoire</th><th class="c">{"Maintien" if mode=="m" else "Montée"} si victoire</th><th class="c">… si défaite</th><th>Enjeu</th></tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
+    # --- scénarios
+    sc=[]
+    allv="V"*len(ms); cbv=s["combo"].get(allv)
+    if cbv and cbv[0]>=50: sc.append(f"<li><b>Tout gagner</b> ({pc(cbv[0]/N)} de chances d'y arriver) : {word} serait à {pc(ok(cbv,mode)/cbv[0])}.</li>")
+    byk=[b for b in s["byk"] if b["p"]>0.005]
+    goal=(next((b for b in byk if b["up"]>=0.5),None) if mode=="u" else next((b for b in byk if b["down"]<=0.1),None))
+    if goal and goal["k"]<len(ms):
+        val=goal["up"] if mode=="u" else 1-goal["down"]
+        sc.append(f"<li><b>L'objectif : {goal['k']} victoire{'s' if goal['k']>1 else ''} sur {len(ms)}</b> ({pc(goal['p'])} de chances de finir exactement là). {word[0].upper()+word[1:]} passerait alors à {pc(val)}.</li>")
+    best=None; others=[]
+    if k:
+        others=[x for x in range(len(ms)) if x!=k["i"]]; target=0.8 if mode=="m" else 0.5; best=None
+        for size in range(0,len(others)+1):
+            cands=[]
+            for S in itertools.combinations(others,size):
+                pr,nn=cond(s,mode,{k["i"]:"D",**{x:"V" for x in S}})
+                if pr is not None and nn>=50: cands.append((pr,S))
+            if cands:
+                pr,S=max(cands)
+                if pr>=target: best=(pr,S); break
+        loser=tn(ms[k["i"]]["opp"])
+        if best and not best[1]: plan=f"pas de panique, {word} resterait à {pc(best[0])}."
+        elif best:
+            nms=[tn(ms[x]["opp"]) for x in best[1]]; lst=nms[0] if len(nms)==1 else ", ".join(nms[:-1])+" et "+nms[-1]
+            plan=f"il faudrait alors battre {lst} pour remonter à {pc(best[0])}."
+        else:
+            pr,nn=cond(s,mode,{k["i"]:"D",**{x:"V" for x in others}})
+            plan=(f"{word} deviendrait quasi impossible, même en gagnant tout le reste." if pr is not None and pr<0.01 else
+                  f"même en gagnant toutes les autres rencontres, {word} plafonnerait à {pc(pr)} et dépendrait des autres résultats." if pr is not None else "les autres résultats deviendraient déterminants.")
+        sc.append(f"<li><b>En cas de défaite contre {loser}</b> : {plan}</li>")
+    zero=next((b for b in s["byk"] if b["k"]==0 and b["p"]>0.005),None)
+    if zero:
+        val=zero["up"] if mode=="u" else 1-zero["down"]
+        sc.append(f"<li><b>Aucune victoire</b> ({pc(zero['p'])} de risque) : {word} tomberait à {pc(val)}.</li>")
+    # --- matchs des autres
+    watch=[]
+    for o in s.get("others",[]):
+        a=o["res"]["1"]; b=o["res"]["-1"]
+        if a[0]<200 or b[0]<200: continue
+        pa=ok(a,mode)/a[0]; pb=ok(b,mode)/b[0]; diff=pa-pb
+        watch.append((abs(diff),o,pa,pb))
+    watch.sort(key=lambda x:-x[0]); wl=[]
+    for dlt,o,pa,pb in watch[:3]:
+        if dlt<0.03: break
+        fav,unf,pf,pu=(o["home"],o["away"],pa,pb) if pa>pb else (o["away"],o["home"],pb,pa)
+        wl.append(f'<li>J{o["round"]}{", "+fd(o["date"]) if o["date"] else ""} · {tn(o["home"])} – {tn(o["away"])} : une victoire de <b>{tn(fav)}</b> arrange {label(p,tid)} ({word} à {pc(pf)}, contre {pc(pu)} si {tn(unf)} gagne).</li>')
+    # --- verdict
+    if mode=="m":
+        tier=("Maintien quasi acquis" if cur>=0.9 else "Bien parti" if cur>=0.7 else "Situation incertaine" if cur>=0.4 else "Situation critique")
+        cls="ok" if cur>=0.9 else "mid" if cur>=0.7 else "warn" if cur>=0.4 else "bad"
     else:
-        allw={k["i"]:"D",**{x:"V" for x in others}}; pr,nn=cond(s,mode,allw)
-        if pr is not None:
-            if pr<0.01: out.append(f"En cas de défaite contre {loser}, {word} deviendrait quasi impossible, même en gagnant toutes les autres rencontres.")
-            elif pr>=0.5: out.append(f"En cas de défaite contre {loser}, il faudrait gagner toutes les autres rencontres pour remonter à {pc(pr)}, et {word} dépendrait aussi des résultats des autres équipes.")
-            else: out.append(f"En cas de défaite contre {loser}, même en gagnant toutes les autres rencontres, {word} ne serait qu'à {pc(pr)} et dépendrait surtout des résultats des autres équipes.")
-    if len(imp)>1 and imp[1]["gap"]>=0.2:
-        x=imp[1]; out.append(f"Autre rencontre qui pèse lourd : {oppdesc(ms[x['i']])}, avec {pc(x['v'])} en cas de victoire contre {pc(x['d'])} en cas de défaite.")
-    easy=max(imp,key=lambda x:x["pw"])
-    if easy["i"] not in (k["i"],imp[1]["i"] if len(imp)>1 and imp[1]["gap"]>=0.2 else -1) and easy["pw"]>=0.6:
-        out.append(f"La rencontre la plus abordable sur le papier est {oppdesc(ms[easy['i']])}, avec {pc(easy['pw'])} de chances de victoire : à ne pas laisser filer.")
-    hard=min(imp,key=lambda x:x["pw"])
-    if hard["pw"]<=0.3 and hard["i"]!=k["i"]:
-        out.append(f"La rencontre {oppdesc(ms[hard['i']])} s'annonce la plus difficile, avec {pc(hard['pw'])} de chances de victoire : un bon résultat y serait un bonus.")
-    return "<p>"+" ".join(out)+"</p>"
+        tier=("Grand favori" if cur>=0.8 else "En bonne position" if cur>=0.5 else "Dans la course" if cur>=0.2 else "Outsider")
+        cls="ok" if cur>=0.8 else "mid" if cur>=0.5 else "warn" if cur>=0.2 else "bad"
+    must=k and ((k["d"] is not None and k["v"] is not None) and ((k["d"]<0.5 and k["v"]>=0.7) if mode=="m" else (k["d"]<0.15 and k["v"]>=0.4))) and (best is None or len(best[1])==len(others))
+    kv=""
+    if k:
+        mk=ms[k["i"]]
+        kv=(f" Tout se jouera surtout {'contre' if mk['home'] else 'à'} {tn(mk['opp'])} le {fd(mk['date'])} : "
+            f"une victoire porterait {word} à {pc(k['v'])}, une défaite {pron} ramènerait à {pc(k['d'])}."+(" <b>Il faut absolument la gagner.</b>" if must else ""))
+    verdict=f'<p class="verdict"><span class="pill {cls}">{tier}</span> {word[0].upper()+word[1:]} à <b>{pc(cur)}</b>.{kv}</p>'
+    html_=verdict+f"<h4>La situation</h4><p>{sit}</p><h4>Les rencontres restantes</h4>{cal}"
+    if sc: html_+="<h4>Les scénarios</h4><ul>"+"".join(sc)+"</ul>"
+    if wl: html_+="<h4>À surveiller chez les autres</h4><ul>"+"".join(wl)+"</ul>"
+    return html_
 def section(mode):
     items=[];calm=[]
     for p in site:
@@ -86,16 +142,30 @@ def section(mode):
     for fem,num,p,tid,open_ in items:
         if open_:
             cur=(1-p["sqy"][tid]["down"]) if mode=="m" else p["sqy"][tid]["up"]
-            blocks.append(f'<article class="pt"><h3>{label(p,tid)} <span class="muted">· {html.escape(p["division"])} · {"maintien" if mode=="m" else "montée"} {pc(cur)}</span></h3>{comment(p,tid,mode)}</article>')
+            blocks.append(f'<article class="pt"><h3>{label(p,tid)} <span class="muted">· {html.escape(p["division"])} · poule {p["pool"]}</span></h3>{comment(p,tid,mode)}</article>')
         else: calm.append(label(p,tid))
     calmtxt=("<p class=\"muted\">Pas d'enjeu pour " if mode=="m" else "<p class=\"muted\">Montée déjà quasi acquise ou hors de portée pour ")+", ".join(calm)+".</p>" if calm else ""
     title="Le point équipe par équipe"
     return f'<section><h2>{title}</h2><div class="pts">{"".join(blocks)}</div>{calmtxt}</section>'
-CSS=".pts{display:grid;gap:10px} .pt{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px} .pt h3{font-family:var(--display);font-size:1.2rem;font-weight:600;margin:0 0 4px} .pt h3 .muted{font-family:var(--body);font-size:.9rem;font-weight:400} .pt p{margin:0;max-width:75ch}</style>"
+CSS=""":root{--warn:#94570a;--warnbg:#fbf0dc;--down:#b3372b;--downbg:#fbe7e4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--warn:#f0b65e;--warnbg:#3a2a12;--down:#f19a8f;--downbg:#3d1e1b}}
+:root[data-theme="dark"]{--warn:#f0b65e;--warnbg:#3a2a12;--down:#f19a8f;--downbg:#3d1e1b}
+.pts{display:grid;gap:14px} .pt{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px 16px;display:grid;gap:8px;min-width:0}
+.pt h3{font-family:var(--display);font-size:1.45rem;font-weight:700;margin:0} .pt h3 .muted{font-family:var(--body);font-size:.95rem;font-weight:400}
+.pt h4{font-size:.76rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:8px 0 0;font-weight:600}
+.pt p{margin:0;max-width:75ch} .pt ul{margin:0;padding-left:1.2em;display:grid;gap:6px;max-width:75ch}
+.verdict{font-size:1.05rem;line-height:1.55}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.85rem;font-weight:600;margin-right:4px;vertical-align:1px}
+.pill.ok{background:var(--upbg);color:var(--up)} .pill.mid{background:var(--line);color:var(--fg)} .pill.warn{background:var(--warnbg);color:var(--warn)} .pill.bad{background:var(--downbg);color:var(--down)}
+.pt .tw{background:var(--bg)} .cal td{vertical-align:top;font-size:.95rem} .cal th{white-space:normal}
+.tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:.78rem;font-weight:600;background:var(--line);white-space:nowrap}
+.tag.key{background:var(--fg);color:var(--surface)} .tag.imp{background:var(--warnbg);color:var(--warn)} .tag.easy{background:var(--upbg);color:var(--up)} .tag.hard{background:var(--downbg);color:var(--down)}
+</style>"""
 for f,mode in (("montees-sqy-ping.html","u"),("maintien-sqy-ping.html","m")):
     h=open(OUT+f).read()
     h=re.sub(r'<section><h2>Le point équipe par équipe</h2>.*?</section>','',h,flags=re.S)
-    if ".pts{" not in h: h=h.replace("</style>",CSS,1)
+    h=re.sub(r":root\{--warn:.*?</style>","</style>",h,count=1,flags=re.S) if "--warn:" in h else re.sub(r"\.pts\{.*?</style>","</style>",h,count=1,flags=re.S)
+    h=h.replace("</style>",CSS,1)
     h=h.replace('<section class="notes">',section(mode)+'<section class="notes">',1)
     open(OUT+f,"w").write(h)
 print("ok")
