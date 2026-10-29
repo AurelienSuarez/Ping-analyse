@@ -13,3 +13,11 @@ Club SQY PING : n° FFTT `08781477`, id API `40001473`.
     python3 standings.py && python3 render.py
 
 `find_sqy.py` a servi à retrouver l'id API du club.
+
+## Probabilités de montée
+
+    python3 build_site_data.py   # calendrier restant + compositions (utilise cache/)
+    python3 simulate.py          # 20 000 simulations des fins de phase -> site.json
+    python3 render_montee.py     # -> montees-sqy-ping.html
+
+`site_template.html` : ébauche du site complet (une page par équipe), pas encore branchée.

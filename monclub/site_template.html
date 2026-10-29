@@ -1,0 +1,140 @@
+<title>SQY Ping Équipes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: barre de navigation collante + une colonne ; accueil = synthèse, chaque équipe = enjeu, classement, adversaires */
+:root{--bg:#f6f7f9;--surface:#ffffff;--fg:#17202b;--muted:#5d6876;--line:#dde2e8;--accent:#1d5fd1;--me:#e8f0fd;
+--up:#1f7a4d;--upbg:#e3f4ea;--down:#b3372b;--downbg:#fbe7e4;--mid:#c9d1db;
+--display:"Barlow Condensed","Arial Narrow",sans-serif;--body:"Source Sans 3","Segoe UI",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#11161d;--surface:#18202a;--fg:#e7ecf2;--muted:#9aa6b4;--line:#2a3542;--accent:#7aa8f5;--me:#1e3050;--up:#6fd3a0;--upbg:#173528;--down:#f19a8f;--downbg:#3d1e1b;--mid:#3a4757;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#11161d;--surface:#18202a;--fg:#e7ecf2;--muted:#9aa6b4;--line:#2a3542;--accent:#7aa8f5;--me:#1e3050;--up:#6fd3a0;--upbg:#173528;--down:#f19a8f;--downbg:#3d1e1b;--mid:#3a4757;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:900px;margin:0 auto;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:700;font-size:1.25rem;color:var(--fg);text-decoration:none;white-space:nowrap}
+.bar select{font:inherit;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);max-width:100%}
+.wrap{max-width:900px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:.01em;text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:2.3rem} h2{font-size:1.45rem} h3{font-size:1.15rem;font-weight:600}
+.lede{color:var(--muted);margin:.35rem 0 0}
+section{display:grid;gap:12px;min-width:0}
+.tw{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--line)} tr:last-child td{border-bottom:0}
+.c{text-align:center}.r{text-align:right}.nw{white-space:nowrap}.muted{color:var(--muted)}.strong{font-weight:600}
+a{color:var(--accent)} a:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+td a{font-weight:600;text-decoration:none;white-space:nowrap} td a:hover{text-decoration:underline}
+tr.me td{background:var(--me);font-weight:600}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.84rem;font-weight:600;background:var(--line);color:var(--fg);white-space:nowrap}
+.chip.up{background:var(--upbg);color:var(--up)}.chip.down{background:var(--downbg);color:var(--down)}
+.pct{font-variant-numeric:tabular-nums;font-weight:600}.pct.up{color:var(--up)}.pct.down{color:var(--down)}
+.odds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.odd{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.odd .k{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.odd .v{font-family:var(--display);font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.odd.up .v{color:var(--up)}.odd.down .v{color:var(--down)}
+.stack{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--mid)}
+.stack span{display:block;height:100%}.stack .u{background:var(--up)}.stack .m{background:var(--mid)}.stack .d{background:var(--down)}
+.say{margin:0;max-width:68ch}
+.matches{display:grid;gap:10px}
+.match{background:var(--surface);border:1px solid var(--line);border-radius:6px;display:grid}
+.match-h{padding:10px 12px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;justify-content:space-between}
+.match-h .who{font-family:var(--display);font-size:1.2rem;font-weight:600}
+.match-h .meta{color:var(--muted);font-size:.92rem}
+.match .tw{border:0;border-top:1px solid var(--line);border-radius:0}
+.lean{font-size:.9rem}
+.notes{color:var(--muted);font-size:.9rem}.notes p{margin:0;max-width:70ch}
+@media (max-width:520px){.odds{grid-template-columns:1fr}.odd .v{font-size:1.6rem}}
+@media (prefers-reduced-motion:no-preference){.stack span{transition:width .3s}}
+</style>
+<div class="bar"><div class="bar-in"><a class="brand" href="#accueil">SQY Ping · Équipes</a>
+<label for="nav" class="muted" hidden>Équipe</label><select id="nav" aria-label="Aller à une équipe"></select></div></div>
+<main class="wrap" id="app"></main>
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const POOLS=JSON.parse(document.getElementById('data').textContent);
+const UPDATED="__UPDATED__";
+const TEAMS=[];
+POOLS.forEach(p=>{Object.entries(p.sqy).forEach(([tid,s])=>{const name=p.teams[tid].name;const num=+name.match(/(\d+)\s*$/)[1];
+  TEAMS.push({key:(p.fem?'f':'m')+num,num,fem:p.fem,tid,p,s});});});
+TEAMS.sort((a,b)=>(a.fem-b.fem)||(a.num-b.num));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pc=x=>{const v=Math.round(x*100);return x>0&&v===0?'<1 %':x<1&&v===100?'>99 %':v+' %'};
+const label=t=>(t.fem?'Dames ':'SQY ')+t.num;
+const fdate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'}):'date à fixer';
+function table(p){const arr=Object.entries(p.teams).map(([id,t])=>({id,...t}));arr.sort((a,b)=>b.pts-a.pts||a.name.localeCompare(b.name));
+  return arr.map(t=>({...t,rank:1+arr.filter(x=>x.pts>t.pts).length,tie:arr.filter(x=>x.pts===t.pts).length>1}));}
+function rankOf(p,tid){return table(p).find(x=>x.id==tid)}
+function chip(r,n,down){const lab=(r.rank===1?'1er':r.rank+'e')+(r.tie?' ex æquo':'');const cls=r.rank===1?' up':(r.rank>n-down?' down':'');return `<span class="chip${cls}">${lab}</span>`}
+function teamName(n){return n.replace(/^SQY PING/,'SQY Ping')}
+
+const nav=document.getElementById('nav');
+nav.innerHTML='<option value="accueil">Toutes les équipes</option>'+
+ '<optgroup label="Messieurs">'+TEAMS.filter(t=>!t.fem).map(t=>`<option value="${t.key}">${label(t)} · ${esc(t.p.division)}</option>`).join('')+'</optgroup>'+
+ '<optgroup label="Dames">'+TEAMS.filter(t=>t.fem).map(t=>`<option value="${t.key}">${label(t)} · ${esc(t.p.division)}</option>`).join('')+'</optgroup>';
+nav.addEventListener('change',()=>{location.hash=nav.value});
+
+function home(){
+  const rows=f=>TEAMS.filter(t=>t.fem===f).map(t=>{const r=rankOf(t.p,t.tid);const T=t.p.teams[t.tid];
+    return `<tr><td><a href="#${t.key}">${label(t)}</a></td><td>${esc(t.p.division)} <span class="muted">· p.${esc(t.p.pool)}</span></td>
+    <td class="c">${chip(r,t.p.n,t.p.down)}</td><td class="c nw">${T.pts} <span class="muted">(${T.V}-${T.N}-${T.D})</span></td>
+    <td class="c"><span class="pct up">${pc(t.s.up)}</span></td><td class="c"><span class="pct down">${pc(t.s.down)}</span></td></tr>`}).join('');
+  const head='<thead><tr><th>Équipe</th><th>Division</th><th class="c">Clt</th><th class="c">Pts (V-N-D)</th><th class="c">Montée</th><th class="c">Descente</th></tr></thead>';
+  return `<header><h1>Les équipes seniors de SQY Ping</h1><p class="lede">Championnat par équipes 2026-2027, phase 1 · ${TEAMS.length} équipes · données du ${UPDATED}</p></header>
+  <section><h2>Messieurs</h2><div class="tw"><table>${head}<tbody>${rows(false)}</tbody></table></div></section>
+  <section><h2>Dames</h2><div class="tw"><table>${head}<tbody>${rows(true)}</tbody></table></div></section>
+  ${notes()}`;
+}
+function sentence(t){
+  const s=t.s,N=s.remaining,b=s.byk;const parts=[];
+  const upK=b.find(x=>x.up>=0.5&&x.p>0.005);const safeK=b.find(x=>x.down<0.1&&x.p>0.005);
+  if(s.up>=0.02&&upK) parts.push(`Avec <b>${upK.k} victoire${upK.k>1?'s':''}</b> sur les ${N} rencontres restantes, la montée devient probable (${pc(upK.up)}).`);
+  else if(s.up<0.02) parts.push(`La montée est quasiment hors de portée cette phase (${pc(s.up)}).`);
+  if(s.down>=0.05&&safeK) parts.push(`Pour se maintenir, viser <b>${safeK.k} victoire${safeK.k>1?'s':''}</b> : le risque de descente tombe alors à ${pc(safeK.down)}.`);
+  else if(s.down>=0.05) parts.push(`Le maintien sera difficile même avec de bons résultats.`);
+  else parts.push(`Le maintien est quasiment assuré (risque de descente ${pc(s.down)}).`);
+  return parts.join(' ');
+}
+function teamPage(t){
+  const p=t.p,s=t.s,T=p.teams[t.tid],r=rankOf(p,t.tid),mid=Math.max(0,1-s.up-s.down);
+  const tbl=table(p).map(x=>`<tr${x.id==t.tid?' class="me"':''}><td class="c">${x.rank}</td><td>${esc(teamName(x.name))}</td><td class="c">${x.J}</td><td class="c">${x.V}</td><td class="c">${x.N}</td><td class="c">${x.D}</td><td class="c strong">${x.pts}</td><td class="r muted">${x.strength}</td></tr>`).join('');
+  const byk=s.byk.filter(x=>x.p>=0.005).map(x=>`<tr><td class="c strong">${x.k} / ${s.remaining}</td><td class="c muted">${pc(x.p)}</td><td class="c"><span class="pct up">${pc(x.up)}</span></td><td class="c"><span class="pct down">${pc(x.down)}</span></td></tr>`).join('');
+  const matches=s.matches.map(m=>{const o=p.teams[m.opp],or=rankOf(p,m.opp);const pl=(p.players[m.opp]||[]).slice(0,6);
+    const games=o.J;const lean=m.pwin>=0.6?'favorable':m.pwin<=0.4?'difficile':'équilibrée';
+    const plr=pl.length?pl.map(x=>`<tr><td>${esc(x.name)}</td><td class="r nw">${x.points} pts</td><td class="r muted nw">${x.n}/${games} renc.</td></tr>`).join(''):'<tr><td class="muted">Aucune composition connue</td></tr>';
+    return `<article class="match"><div class="match-h"><span class="who">${m.home?'vs':'à'} ${esc(teamName(o.name))}</span>
+      <span class="meta">J${m.round} · ${fdate(m.date)} · ${m.home?'domicile':'extérieur'} · adversaire ${or.rank===1?'1er':or.rank+'e'} (${o.pts} pts)</span>
+      <span class="lean">Rencontre ${lean} · ${pc(m.pwin)} de chances estimées</span></div>
+      <div class="tw"><table><thead><tr><th>Joueurs probables</th><th class="r">Points</th><th class="r">Joués</th></tr></thead><tbody>${plr}</tbody></table></div></article>`}).join('');
+  const res=p.played.filter(m=>m.home==t.tid||m.away==t.tid).sort((a,b)=>a.round-b.round).map(m=>{const home=m.home==t.tid,opp=home?m.away:m.home;
+    const my=home?m.hp:m.ap,their=home?m.ap:m.hp;const out=m.draw?'Nul':(m.winner===(home?'home':'away')?'Victoire':'Défaite');
+    const cls=out==='Victoire'?'up':out==='Défaite'?'down':'';
+    return `<tr><td class="c">J${m.round}</td><td class="nw">${fdate(m.date)}</td><td>${home?'vs':'à'} ${esc(teamName(p.teams[opp].name))}</td><td><span class="chip ${cls}">${out}${m.forfeit?' (forfait)':''}</span></td><td class="c muted">${my}-${their}</td></tr>`}).join('');
+  const mine=(p.players[t.tid]||[]).map(x=>`<tr><td>${esc(x.name)}</td><td class="r nw">${x.points} pts</td><td class="r muted nw">${x.n}/${T.J} renc.</td></tr>`).join('');
+  return `<header><h1>${label(t)}</h1><p class="lede">${esc(p.division)} · poule ${esc(p.pool)} · ${chip(r,p.n,p.down)} avec ${T.pts} pts (${T.V}-${T.N}-${T.D}) · ${s.remaining} rencontres à jouer</p></header>
+  <section><h2>Enjeu de la phase</h2>
+   <div class="odds"><div class="odd up"><div class="k">Montée</div><div class="v">${pc(s.up)}</div></div>
+   <div class="odd"><div class="k">Maintien</div><div class="v">${pc(mid)}</div></div>
+   <div class="odd down"><div class="k">Descente</div><div class="v">${pc(s.down)}</div></div></div>
+   <div class="stack" role="img" aria-label="Montée ${pc(s.up)}, maintien ${pc(mid)}, descente ${pc(s.down)}"><span class="u" style="width:${s.up*100}%"></span><span class="m" style="width:${mid*100}%"></span><span class="d" style="width:${s.down*100}%"></span></div>
+   <p class="say">${sentence(t)}</p>
+   <div class="tw"><table><thead><tr><th class="c">Victoires restantes</th><th class="c">Chance d'y arriver</th><th class="c">Montée</th><th class="c">Descente</th></tr></thead><tbody>${byk}</tbody></table></div>
+  </section>
+  <section><h2>Classement de la poule</h2><div class="tw"><table><thead><tr><th class="c">Clt</th><th>Équipe</th><th class="c">J</th><th class="c">V</th><th class="c">N</th><th class="c">D</th><th class="c">Pts</th><th class="r">Force</th></tr></thead><tbody>${tbl}</tbody></table></div>
+  <p class="muted" style="margin:0;font-size:.9rem">Force : moyenne des points des ${p.nopp===10?3:4} meilleurs joueurs alignés à chaque rencontre.</p></section>
+  <section><h2>Prochains adversaires</h2><div class="matches">${matches||'<p class="muted">Plus de rencontre à jouer.</p>'}</div></section>
+  <section><h2>Résultats</h2><div class="tw"><table><thead><tr><th class="c">J</th><th>Date</th><th>Rencontre</th><th>Résultat</th><th class="c">Pts</th></tr></thead><tbody>${res}</tbody></table></div></section>
+  <section><h2>Joueurs alignés</h2><div class="tw"><table><thead><tr><th>Joueur</th><th class="r">Points</th><th class="r">Joués</th></tr></thead><tbody>${mine}</tbody></table></div></section>
+  ${notes()}`;
+}
+function notes(){return `<section class="notes"><h2>D'où viennent ces chiffres</h2>
+ <p>Résultats et feuilles de match : API de la FFTT qui alimente monclub.fftt.com, au ${UPDATED}. Points : victoire 3, nul 2, défaite 1.</p>
+ <p>Hypothèse de montée et descente : le 1er de chaque poule monte, les 2 derniers descendent. Le nombre réel dépend du règlement de chaque échelon et des descentes venues du dessus ; à vérifier auprès de la ligue ou du comité.</p>
+ <p>Probabilités : 20 000 simulations des rencontres restantes. Les chances de chaque rencontre viennent de l'écart de force entre les équipes, avec un aléa sur la composition alignée. Les joueurs probables sont ceux que l'adversaire a déjà alignés, du plus souvent au moins souvent. Ce sont des estimations, pas des pronostics sûrs.</p></section>`}
+function route(){const k=(location.hash||'#accueil').slice(1);const t=TEAMS.find(x=>x.key===k);
+  document.getElementById('app').innerHTML=t?teamPage(t):home();nav.value=t?k:'accueil';document.title=t?`${label(t)} · SQY Ping Équipes`:'SQY Ping Équipes';window.scrollTo(0,0);}
+window.addEventListener('hashchange',route);route();
+</script>
