@@ -26,7 +26,7 @@ def table(fem):
     out=[]
     for r in rs:
         lab=("1er" if r["rank"]==1 else f'{r["rank"]}e')+(" ex æquo" if r["tie"] else "")
-        cls=" up" if r["rank"]==1 else ""
+        cls=" up" if r["rank"]<=r["p"]["upn"] else ""
         gap="" if r["T"]["pts"]==r["leader"] else f' <span class="muted">(−{r["leader"]-r["T"]["pts"]})</span>'
         out.append(f'<tr><td class="strong nw">{"Dames" if fem else "SQY"} {r["num"]}</td><td>{html.escape(r["p"]["division"])} <span class="muted">· p.{r["p"]["pool"]}</span></td><td class="c nw"><span class="chip{cls}">{lab}</span>{gap}</td><td class="pcol"><div class="pv"><span class="pct">{pc(r["s"]["up"])}</span>{bar(r["s"]["up"])}</div></td><td>{need(r["s"])}</td></tr>')
     return "\n".join(out)
@@ -77,7 +77,7 @@ td{{padding:8px 10px;border-bottom:1px solid var(--line)}} tr:last-child td{{bor
 <section><h2>Messieurs</h2><div class="tw"><table>{head}<tbody>{table(False)}</tbody></table></div></section>
 <section><h2>Dames</h2><div class="tw"><table>{head}<tbody>{table(True)}</tbody></table></div></section>
 <section class="notes"><h2>Comment c'est calculé</h2>
-<p>Hypothèse : seul le 1er de la poule monte. Le nombre réel de montées dépend du règlement de chaque échelon ; à vérifier auprès de la ligue ou du comité.</p>
+<p>Hypothèse : les 2 premiers montent en Pré-Régionale, seul le 1er monte dans les autres divisions. Le nombre réel de montées dépend du règlement de chaque échelon ; à vérifier auprès de la ligue ou du comité.</p>
 <p>20 000 simulations des rencontres restantes. Les chances de chaque rencontre viennent de l'écart de force entre les équipes (moyenne des points actuels des joueurs les plus souvent alignés, adversaires comme SQY), avec un aléa sur la composition. « Pour monter » donne le nombre de victoires à partir duquel la montée devient plus probable qu'improbable.</p>
 <p>Source : résultats et feuilles de match de l'API FFTT qui alimente monclub.fftt.com. Ce sont des estimations.</p></section>
 </div>'''
@@ -94,7 +94,7 @@ pm=re.sub(r'<div class="facts">.*?</div>',f'<div class="facts"><span><b>{safe}</
 pm=pm.replace(head+"<tbody>"+table(False),head_m+"<tbody>"+table_m(False)).replace(head+"<tbody>"+table(True),head_m+"<tbody>"+table_m(True))
 pm=pm.replace("--up:#1f7a4d;--upbg:#e3f4ea;","--up:#1f7a4d;--upbg:#e3f4ea;--down:#b3372b;--downbg:#fbe7e4;").replace("--up:#6fd3a0;--upbg:#173528;","--up:#6fd3a0;--upbg:#173528;--down:#f19a8f;--downbg:#3d1e1b;")
 pm=pm.replace(".chip.up{background:var(--upbg);color:var(--up)}",".chip.up{background:var(--upbg);color:var(--up)} .chip.down{background:var(--downbg);color:var(--down)}")
-pm=pm.replace("<p>Hypothèse : seul le 1er de la poule monte. Le nombre réel de montées dépend du règlement de chaque échelon ; à vérifier auprès de la ligue ou du comité.</p>",
+pm=pm.replace("<p>Hypothèse : les 2 premiers montent en Pré-Régionale, seul le 1er monte dans les autres divisions. Le nombre réel de montées dépend du règlement de chaque échelon ; à vérifier auprès de la ligue ou du comité.</p>",
  "<p>Hypothèse : les 2 derniers de la poule descendent. Le nombre réel de descentes dépend du règlement de chaque échelon et des descentes venues de l'échelon au-dessus ; à vérifier auprès de la ligue ou du comité.</p>")
 pm=pm.replace("« Pour monter » donne le nombre de victoires à partir duquel la montée devient plus probable qu'improbable.","« Pour se maintenir » donne le nombre de victoires à partir duquel le maintien est assuré à 90 % ou plus.")
 pm=pm.replace("équipes triées par numéro, la barre verte porte l'information","équipes triées par numéro, la barre verte montre la chance de maintien")

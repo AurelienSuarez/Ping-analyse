@@ -26,7 +26,7 @@ def comment(p,tid,mode):
         o=p["teams"][str(m["opp"])]; r=rank(p,str(m["opp"]))
         tag=""
         if mode=="m" and r>=n-3 and abs(o["pts"]-me["pts"])<=2: tag=", rival direct pour le maintien"
-        if mode=="u" and (r<=2 or o["pts"]>=me["pts"]) : tag=", concurrent direct pour la 1re place"
+        if mode=="u" and (r<=p["upn"]+1 or o["pts"]>=me["pts"]) : tag=", concurrent direct pour la 1re place" if p["upn"]==1 else ", concurrent direct pour les 2 places de montée"
         return f'{"contre" if m["home"] else "à"} <b>{nm(o["name"])}</b> (J{m["round"]}{", "+fd(m["date"]) if m["date"] else ""} ; {"1er" if r==1 else str(r)+"e"}, {o["pts"]} pts{tag})'
     def short(i): return nm(p["teams"][str(ms[i]["opp"])]["name"])
     imp=[]
@@ -35,7 +35,8 @@ def comment(p,tid,mode):
         if v is None or d is None or nv<100 or nd<100: continue
         imp.append(dict(i=i,v=v,d=d,pw=nv/N,gap=v-d))
     if not imp: return f"<p>Plus grand-chose ne dépend des résultats de l'équipe : {word} est à {pc(cur)}.</p>"
-    imp.sort(key=lambda x:-x["gap"]); k=imp[0]; out=[]
+    # poids réel : écart victoire/défaite pondéré par l incertitude de la rencontre
+    imp.sort(key=lambda x:-x["gap"]*(x["pw"]*(1-x["pw"]))**0.5); k=imp[0]; out=[]
     others=[x for x in range(len(ms)) if x!=k["i"]]
     target=0.8 if mode=="m" else 0.5
     best=None

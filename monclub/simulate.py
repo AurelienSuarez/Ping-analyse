@@ -28,7 +28,7 @@ for P in raw:
             if m["draw"]: b["N"]+=1
             elif m["winner"]==("home" if side=="h" else "away"): b["V"]+=1
             else: b["D"]+=1
-    n=len(teams); down=2
+    n=len(teams); down=2; upn=2 if "Pré-Régionale" in P["division"] else 1
     sqys=[t for t in teams if "SQY" in teams[t].upper()]
     fut=P["future"]
     def play(h,a,S):
@@ -50,12 +50,12 @@ for P in raw:
         order=sorted(teams,key=lambda t:(-pts[t],random.random()))
         for t in sqys:
             rk=order.index(t)+1; R=res[t]; R["ranks"][rk]+=1
-            u=rk==1; d=rk>n-down
+            u=rk<=upn; d=rk>n-down
             R["up"]+=u; R["down"]+=d
             bk=R["byk"][wins[t]]; bk[0]+=1; bk[1]+=u; bk[2]+=d
             key="".join({1:"V",0:"N",-1:"D"}[r if h==t else -r] for h,r in (outc[i] for i in myf[t]))
             cb=R["combo"][key]; cb[0]+=1; cb[1]+=u; cb[2]+=d
-    pool=dict(pool=P["poolName"],division=P["division"],fem=P["fem"],n=n,down=down,nopp=P["nopp"],
+    pool=dict(pool=P["poolName"],division=P["division"],fem=P["fem"],n=n,down=down,upn=upn,nopp=P["nopp"],
         teams={t:dict(name=teams[t],strength=round(strength[t]),**base[t]) for t in teams},
         played=[{k:m[k] for k in ("date","round","home","away","hp","ap","winner","draw","forfeit")} for m in P["played"]],
         future=[{k:m[k] for k in ("date","round","home","away")} for m in fut],
