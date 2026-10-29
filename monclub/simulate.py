@@ -2,7 +2,7 @@ import json,random,re,statistics,collections
 raw=json.load(open("site_raw.json"))
 D=300; N=20000; random.seed(7)
 def pwin(a,b): return 1/(1+10**((b-a)/D))
-site=[]
+site=[]; DIFF=[]
 for P in raw:
     teams={int(k):v for k,v in P["teams"].items()}
     k=P["nplay"]
@@ -13,7 +13,14 @@ for P in raw:
             pts=sorted(pts,reverse=True)[:k]
             if pts: lin[int(side)].append(sum(pts)/len(pts))
     allv=[v for l in lin.values() for v in l] or [1000]
-    strength={t:(statistics.mean(lin[t]) if lin[t] else statistics.mean(allv)) for t in teams}
+    old_strength={t:(statistics.mean(lin[t]) if lin[t] else statistics.mean(allv)) for t in teams}
+    # force = composition habituelle : les k joueurs les plus souvent alignés (à égalité, les mieux classés)
+    strength={}
+    for t in teams:
+        pl=sorted((P["players"].get(str(t)) or {}).values(),key=lambda x:(-x["n"],-x["points"]))[:k]
+        strength[t]=statistics.mean([x["points"] for x in pl]) if len(pl)==k else old_strength[t]
+    for t in teams:
+        if "SQY" in teams[t].upper() or abs(strength[t]-old_strength[t])>=80: DIFF.append((P["division"],teams[t],round(old_strength[t]),round(strength[t])))
     base={t:dict(pts=0,J=0,V=0,N=0,D=0) for t in teams}
     for m in P["played"]:
         for me,side,o in ((m["home"],"h","a"),(m["away"],"a","h")):
@@ -65,3 +72,5 @@ for P in raw:
         print(f'{teams[t]:<14}{P["division"]:<26} up {R["up"]/N:5.0%} down {R["down"]/N:5.0%} restant {nf}')
     site.append(pool)
 json.dump(site,open("site.json","w"),ensure_ascii=False)
+print("\nÉcarts de force (ancien -> habituel):")
+for d in DIFF: print("  ",*d)

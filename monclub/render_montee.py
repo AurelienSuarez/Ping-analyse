@@ -78,7 +78,7 @@ td{{padding:8px 10px;border-bottom:1px solid var(--line)}} tr:last-child td{{bor
 <section><h2>Dames</h2><div class="tw"><table>{head}<tbody>{table(True)}</tbody></table></div></section>
 <section class="notes"><h2>Comment c'est calculé</h2>
 <p>Hypothèse : seul le 1er de la poule monte. Le nombre réel de montées dépend du règlement de chaque échelon ; à vérifier auprès de la ligue ou du comité.</p>
-<p>20 000 simulations des rencontres restantes. Les chances de chaque rencontre viennent de l'écart de force entre les équipes (moyenne des points des joueurs déjà alignés), avec un aléa sur la composition. « Pour monter » donne le nombre de victoires à partir duquel la montée devient plus probable qu'improbable.</p>
+<p>20 000 simulations des rencontres restantes. Les chances de chaque rencontre viennent de l'écart de force entre les équipes (moyenne des points actuels des joueurs les plus souvent alignés, adversaires comme SQY), avec un aléa sur la composition. « Pour monter » donne le nombre de victoires à partir duquel la montée devient plus probable qu'improbable.</p>
 <p>Source : résultats et feuilles de match de l'API FFTT qui alimente monclub.fftt.com. Ce sont des estimations.</p></section>
 </div>'''
 open("montees-sqy-ping.html","w").write(page)
