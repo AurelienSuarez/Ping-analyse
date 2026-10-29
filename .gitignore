@@ -1,1 +1,3 @@
 __pycache__/
+monclub/cache/
+monclub/*.json
