@@ -16,7 +16,7 @@ def need(s):
     return f'{k["k"]} victoire{"s" if k["k"]>1 else ""} sur {s["remaining"]} <span class="muted">→ {pc(k["up"])}</span>'
 def bar(x): return f'<div class="bar" role="img" aria-label="{pc(x)}"><span style="width:{x*100:.1f}%"></span></div>'
 def table(fem):
-    rs=sorted([r for r in rows if r["fem"]==fem],key=lambda r:(-r["s"]["up"],r["num"]))
+    rs=sorted([r for r in rows if r["fem"]==fem],key=lambda r:r["num"])
     out=[]
     for r in rs:
         lab=("1er" if r["rank"]==1 else f'{r["rank"]}e')+(" ex æquo" if r["tie"] else "")
@@ -32,7 +32,7 @@ page=f'''<title>Montées SQY Ping</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap">
 <style>
-/* Layout: une colonne ; équipes triées par chance de montée, la barre verte porte l'information */
+/* Layout: une colonne ; équipes triées par numéro, la barre verte porte l'information */
 :root{{--bg:#f6f7f9;--surface:#ffffff;--fg:#17202b;--muted:#5d6876;--line:#dde2e8;--up:#1f7a4d;--upbg:#e3f4ea;--track:#e6eaef;
 --display:"Barlow Condensed","Arial Narrow",sans-serif;--body:"Source Sans 3","Segoe UI",system-ui,sans-serif}}
 @media (prefers-color-scheme:dark){{:root:not([data-theme="light"]){{--bg:#11161d;--surface:#18202a;--fg:#e7ecf2;--muted:#9aa6b4;--line:#2a3542;--up:#6fd3a0;--upbg:#173528;--track:#253140;color-scheme:dark}}}}
