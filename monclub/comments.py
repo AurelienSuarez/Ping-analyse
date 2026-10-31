@@ -24,7 +24,7 @@ def plist(rows,mode="reg"):
     out=[]
     for r in rows:
         extra=""
-        if mode=="reg": extra=f'{r["inT"]}/{r["J"]} renc.'
+        if mode=="reg": extra="ajouté à la main : titulaire annoncé, pas encore de feuille de match" if r.get("forced") else f'{r["inT"]}/{r["J"]} renc.'
         elif mode=="ren": extra=f'joue d\'habitude en équipe {r["main"]}'
         elif mode=="burn": extra=r["why"]
         warn=' <span class="tag hard">à 1 match du brûlage</span>' if mode=="reg" and r["lower"]==1 else ""

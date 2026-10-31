@@ -37,3 +37,7 @@ Pour le mettre à jour après un nouveau calcul :
 
     python3 make_standalone.py enjeux-sqy-ping.html /chemin/vers/gh-pages/index.html
     # puis commit + push de la branche gh-pages
+
+## Corrections manuelles
+
+`overrides.json` : joueurs à ajouter à la main (recrue sans feuille de match, etc.), avec leurs points et leur probabilité de présence.

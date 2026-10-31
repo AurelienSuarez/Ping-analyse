@@ -1,3 +1,4 @@
 __pycache__/
 monclub/cache/
 monclub/*.json
+!monclub/overrides.json

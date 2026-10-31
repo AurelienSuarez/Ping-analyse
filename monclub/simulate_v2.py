@@ -2,6 +2,7 @@ import json,random,re,statistics,collections
 import lineup
 raw=json.load(open("site_raw.json"))
 PLAYERS,TEAMS=lineup.build(json.load(open("clubs_apps.json")))
+OVR=json.load(open("overrides.json"))["joueurs_ajoutes"]
 D=300; N=20000; random.seed(7)
 def pwin(a,b): return 1/(1+10**((b-a)/D))
 site=[]; DIFF=[]
@@ -22,7 +23,7 @@ for P in raw:
         pl=sorted((P["players"].get(str(t)) or {}).values(),key=lambda x:(-x["n"],-x["points"]))[:k]
         strength[t]=statistics.mean([x["points"] for x in pl]) if len(pl)==k else old_strength[t]
     # compositions possibles selon le brûlage ; la force devient celle de la composition probable
-    compo={t:lineup.candidates(t,PLAYERS,TEAMS,k) for t in teams}
+    compo={t:lineup.candidates(t,PLAYERS,TEAMS,k,[o for o in OVR if o["equipe"]==teams[t] and o["genre"]==("F" if P["fem"] else "M")]) for t in teams}
     for t in teams:
         c=compo[t]
         if c and len(c["probable"])==k:
@@ -79,7 +80,7 @@ for P in raw:
         future=[{k:m[k] for k in ("date","round","home","away")} for m in fut],
         players={int(t):sorted(v.values(),key=lambda x:(-x["n"],-x["points"])) for t,v in P["players"].items()},
         sqy={},
-        compo={t:(None if not compo[t] else {kk:[dict(name=r["name"],points=r["points"],inT=r["inT"],J=r["J"],lower=r["lower"],main=r["main"],why=r.get("why","")) for r in compo[t][kk]] for kk in ("probable","bench","burned","alerts","renforts","up")}) for t in teams})
+        compo={t:(None if not compo[t] else {kk:[dict(name=r["name"],points=r["points"],inT=r["inT"],J=r["J"],lower=r["lower"],main=r["main"],why=r.get("why",""),forced=r.get("forced"),note=r.get("note","")) for r in compo[t][kk]] for kk in ("probable","bench","burned","alerts","renforts","up")}) for t in teams})
     for t in sqys:
         R=res[t]; nf=sum(1 for m in fut if t in (m["home"],m["away"]))
         pool["sqy"][t]=dict(up=R["up"]/N,down=R["down"]/N,remaining=nf,

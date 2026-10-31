@@ -40,7 +40,7 @@ def status(P, tid, num, pool, teams):
             return False, lower, "a déjà joué pour l'autre équipe du club dans cette poule"
     return True, lower, ""
 
-def candidates(tid, players, teams, k):
+def candidates(tid, players, teams, k, forced=()):
     T = teams.get(tid)
     if not T or T["num"] is None: return None
     club = players.get((T["cid"], T["gender"]), {})
@@ -59,7 +59,10 @@ def candidates(tid, players, teams, k):
         if inT: reg.append(row)
         elif row["main"] is not None and row["main"] > T["num"]: down.append(row)   # joue habituellement plus bas : renfort possible
         elif row["main"] is not None and row["main"] < T["num"]: up.append(row)     # joue plus haut, encore qualifié
-    reg.sort(key=lambda r: (-r["inT"], -r["points"]))
+    for f in forced:
+        reg.append(dict(lic="manuel:"+f["nom"], name=f["nom"], points=f["points"], inT=0, J=J, lower=0,
+                        main=T["num"], forced=f.get("presence", 1.0), note=f.get("note", "")))
+    reg.sort(key=lambda r: (-(r.get("forced") or 0), -r["inT"], -r["points"]))
     down.sort(key=lambda r: -r["points"]); up.sort(key=lambda r: -r["points"])
     probable = reg[:k]
     if len(probable) < k: probable += down[:k - len(probable)]
@@ -72,8 +75,9 @@ def sample(c, rnd):
     """Tire une composition : chaque habitué est présent selon sa fréquence ; on complète avec les renforts."""
     k = c["k"]; present = []
     for r in c["regulars"]:
-        if rnd.random() < min(0.95, r["inT"] / c["J"] + 0.05): present.append(r)
-    present.sort(key=lambda r: (-r["inT"], rnd.random()))
+        p = r["forced"] if r.get("forced") else min(0.95, r["inT"] / c["J"] + 0.05)
+        if rnd.random() < p: present.append(r)
+    present.sort(key=lambda r: (-(r.get("forced") or 0), -r["inT"], rnd.random()))
     team = present[:k]
     pool = [r for r in c["renforts"] + c["regulars"] if r not in team]
     while len(team) < k and pool:
