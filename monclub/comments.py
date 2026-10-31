@@ -30,7 +30,7 @@ def plist(rows,mode="reg"):
         warn=' <span class="tag hard">à 1 match du brûlage</span>' if mode=="reg" and r["lower"]==1 else ""
         out.append(f'<li><b>{nm(r["name"])}</b> · {fmtp(r["points"])} pts <span class="muted">· {extra}</span>{warn}</li>')
     return "".join(out)
-def compo_block(p,tid,title,open_=False):
+def compo_block(p,tid,title,open_=False,duels=None,mine=None,mylabel=""):
     c=(p.get("compo") or {}).get(str(tid))
     if not c or not c["probable"]: return ""
     avg=round(sum(r["points"] for r in c["probable"])/len(c["probable"]))
@@ -39,6 +39,15 @@ def compo_block(p,tid,title,open_=False):
     if c["bench"]: h+=f'<p class="lab">Remplaçants possibles</p><ul>{plist([r for r in c["bench"] if r["inT"]])}{plist([r for r in c["bench"] if not r["inT"]],"ren")}</ul>'
     if c["burned"]: h+=f'<p class="lab">Ne peuvent plus jouer dans cette équipe</p><ul>{plist(c["burned"],"burn")}</ul>'
     if c["alerts"]: h+='<p class="note">« À 1 match du brûlage » : ce joueur a déjà disputé 1 rencontre dans une équipe de numéro inférieur. S\'il y rejoue une fois, il ne pourra plus jouer dans cette équipe.</p>'
+    if duels and mine and c["probable"]:
+        th="".join(f'<th class="c">{nm(r["name"].split()[-1])}<br><span class="muted">{fmtp(r["points"])}</span></th>' for r in c["probable"])
+        trs=""
+        for r,row in zip(mine,duels):
+            cells="".join(f'<td class="c du {"g" if v>=0.6 else "b" if v<=0.4 else ""}">{round(v*100)} %</td>' for v in row)
+            trs+=f'<tr><td class="nw"><b>{nm(r["name"])}</b> <span class="muted">{fmtp(r["points"])}</span></td>{cells}</tr>'
+        h+=(f'<p class="lab">Duels : chances de chaque joueur de {mylabel} contre chaque adversaire probable</p>'
+            f'<div class="tw"><table class="duels"><thead><tr><th></th>{th}</tr></thead><tbody>{trs}</tbody></table></div>'
+            '<p class="note">Chances d\'une partie en simple, calculées sur les points FFTT actuels avec le modèle calibré (avantage à domicile compris). Sur la feuille, chaque joueur rencontre 3 des 4 adversaires selon l\'ordre choisi par les capitaines.</p>')
     return h+"</div></details>"
 
 def comment(p,tid,mode):
@@ -150,7 +159,8 @@ def comment(p,tid,mode):
             f"une victoire porterait {word} à {pc(k['v'])}, une défaite {pron} ramènerait à {pc(k['d'])}."+(" <b>Il faut absolument la gagner.</b>" if must else ""))
     verdict=f'<p class="verdict"><span class="pill {cls}">{tier}</span> {word[0].upper()+word[1:]} à <b>{pc(cur)}</b>.{kv}</p>'
     own=compo_block(p,tid,f"Notre composition probable ({label(p,tid)})")
-    opps="".join(compo_block(p,m["opp"],f'J{m["round"]} · {tn(m["opp"])}') for m in ms)
+    myc=(p.get("compo") or {}).get(str(tid)) or {}
+    opps="".join(compo_block(p,m["opp"],f'J{m["round"]} · {tn(m["opp"])}',duels=m.get("duels"),mine=myc.get("probable"),mylabel=label(p,tid)) for m in ms)
     html_=verdict+f"<h4>La situation</h4><p>{sit}</p>{own}<h4>Les rencontres restantes</h4>{cal}"
     if opps: html_+=f"<h4>Les compositions adverses probables</h4><div class=\"compos\">{opps}</div>"
     if sc: html_+="<h4>Les scénarios</h4><ul>"+"".join(sc)+"</ul>"
@@ -188,7 +198,7 @@ CSS=""":root{--warn:#94570a;--warnbg:#fbf0dc;--down:#b3372b;--downbg:#fbe7e4}
 .compos{display:grid;gap:6px} .compo{border:1px solid var(--line);border-radius:6px;background:var(--bg)}
 .compo summary{cursor:pointer;padding:8px 10px;font-weight:600} .compo summary:focus-visible{outline:2px solid var(--up);outline-offset:2px}
 .cb{padding:0 12px 10px;display:grid;gap:4px} .cb .lab{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:6px 0 0}
-.cb ul{list-style:none;padding:0;gap:3px} .cb .note{font-size:.88rem;color:var(--muted)}
+.cb ul{list-style:none;padding:0;gap:3px} .duels td,.duels th{padding:5px 7px;font-size:.88rem} .du.g{background:var(--upbg);color:var(--up);font-weight:600} .du.b{background:var(--downbg);color:var(--down);font-weight:600} .cb .note{font-size:.88rem;color:var(--muted)}
 .tag.key{background:var(--fg);color:var(--surface)} .tag.imp{background:var(--warnbg);color:var(--warn)} .tag.easy{background:var(--upbg);color:var(--up)} .tag.hard{background:var(--downbg);color:var(--down)}
 </style>"""
 for f,mode in (("montees-sqy-ping.html","u"),("maintien-sqy-ping.html","m")):

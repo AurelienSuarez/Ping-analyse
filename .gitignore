@@ -1,4 +1,6 @@
 __pycache__/
-monclub/cache/
 monclub/*.json
 !monclub/overrides.json
+monclub/cache/
+monclub/site/
+monclub/weekly_box.html

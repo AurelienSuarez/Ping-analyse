@@ -1,0 +1,137 @@
+{
+ "Dames 2": {
+  "up": 0.0,
+  "down": 0.00575,
+  "division": "Régionale 1 Dames"
+ },
+ "SQY 1": {
+  "up": 0.0406,
+  "down": 0.0,
+  "division": "Nationale 2 Messieurs"
+ },
+ "SQY 2": {
+  "up": 0.06625,
+  "down": 0.0,
+  "division": "Nationale 3 Messieurs"
+ },
+ "SQY 3": {
+  "up": 0.00255,
+  "down": 0.3929,
+  "division": "Régionale 1 Messieurs"
+ },
+ "Dames 4": {
+  "up": 0.09065,
+  "down": 0.2541,
+  "division": "Pré-Régionale Dames"
+ },
+ "Dames 3": {
+  "up": 0.44325,
+  "down": 0.0008,
+  "division": "Pré-Régionale Dames"
+ },
+ "SQY 4": {
+  "up": 0.77805,
+  "down": 0.0029,
+  "division": "Pré-Régionale"
+ },
+ "SQY 5": {
+  "up": 0.97075,
+  "down": 0.0,
+  "division": "Pré-Régionale"
+ },
+ "SQY 6": {
+  "up": 0.15965,
+  "down": 0.00835,
+  "division": "Départementale 1"
+ },
+ "SQY 7": {
+  "up": 0.0108,
+  "down": 0.01545,
+  "division": "Départementale 1"
+ },
+ "SQY 8": {
+  "up": 0.06875,
+  "down": 5e-05,
+  "division": "Départementale 1"
+ },
+ "SQY 11": {
+  "up": 0.9673,
+  "down": 0.0,
+  "division": "Départementale 2"
+ },
+ "SQY 9": {
+  "up": 0.0121,
+  "down": 0.00585,
+  "division": "Départementale 2"
+ },
+ "SQY 10": {
+  "up": 0.0,
+  "down": 0.36065,
+  "division": "Départementale 2"
+ },
+ "SQY 18": {
+  "up": 0.93465,
+  "down": 0.0,
+  "division": "Départementale 3"
+ },
+ "SQY 15": {
+  "up": 0.01605,
+  "down": 0.00125,
+  "division": "Départementale 3"
+ },
+ "SQY 16": {
+  "up": 0.22845,
+  "down": 0.0043,
+  "division": "Départementale 3"
+ },
+ "SQY 14": {
+  "up": 0.18435,
+  "down": 0.00035,
+  "division": "Départementale 3"
+ },
+ "SQY 13": {
+  "up": 0.9018,
+  "down": 0.0,
+  "division": "Départementale 3"
+ },
+ "SQY 12": {
+  "up": 0.0,
+  "down": 0.087,
+  "division": "Départementale 3"
+ },
+ "SQY 17": {
+  "up": 0.13105,
+  "down": 0.04005,
+  "division": "Départementale 3"
+ },
+ "SQY 23": {
+  "up": 0.00105,
+  "down": 0.5024,
+  "division": "Départementale 4"
+ },
+ "SQY 22": {
+  "up": 0.0,
+  "down": 0.54335,
+  "division": "Départementale 4"
+ },
+ "SQY 24": {
+  "up": 0.0003,
+  "down": 0.67885,
+  "division": "Départementale 4"
+ },
+ "SQY 20": {
+  "up": 0.0568,
+  "down": 0.0072,
+  "division": "Départementale 4"
+ },
+ "SQY 21": {
+  "up": 0.0379,
+  "down": 0.0039,
+  "division": "Départementale 4"
+ },
+ "SQY 19": {
+  "up": 0.07035,
+  "down": 0.05295,
+  "division": "Départementale 4"
+ }
+}
