@@ -4,3 +4,4 @@ monclub/*.json
 monclub/cache/
 monclub/site/
 monclub/weekly_box.html
+!monclub/bareme.json
