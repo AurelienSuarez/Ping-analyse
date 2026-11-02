@@ -48,3 +48,14 @@ Pour le mettre à jour après un nouveau calcul :
 ## Corrections manuelles
 
 `overrides.json` : joueurs à ajouter à la main (recrue sans feuille de match, etc.), avec leurs points et leur probabilité de présence.
+
+## Progression des jeunes (classement virtuel, tournois compris)
+
+    python3 progression.py --du 2026-10-01 --au 2026-11-30             # affiche le classement et le podium
+    python3 progression.py --du 2026-10-01 --au 2026-11-30 --discord   # l'envoie aussi (webhook dans DISCORD_WEBHOOK_URL)
+
+À fournir dans ce dossier (non versionnés) :
+- `jeunes.json` : `[{"licence": "1234567", "nom": "Prénom NOM"}, ...]`. L'API ne donne pas l'âge des autres licenciés, donc la liste se fait à la main.
+- `bareme.json` : la grille de l'article IV.205.1 (règlements généraux 2026-2027), voir l'en-tête de `progression.py`.
+
+Toutes les parties de simple de la saison sont comptées (`/api/games`) : championnat, tournois, critérium. Chaque résultat est multiplié par le coefficient de sa compétition, lu dans l'API. C'est une estimation : l'API ne fournit pas les points mensuels de référence, on prend les points affichés dans chaque partie.
