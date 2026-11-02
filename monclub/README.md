@@ -55,7 +55,7 @@ Pour le mettre à jour après un nouveau calcul :
     python3 progression.py --du 2026-10-01 --au 2026-11-30 --discord   # l'envoie aussi (webhook dans DISCORD_WEBHOOK_URL)
 
 À fournir dans ce dossier (non versionnés) :
-- `jeunes.json` : `[{"licence": "1234567", "nom": "Prénom NOM"}, ...]`, généré par `python3 trouver_jeunes.py` (joueurs SQY du Championnat des Jeunes). L'API ne donne pas l'âge des licenciés : un jeune absent de ce championnat (ex. qui ne joue qu'en équipe adulte) est à mettre dans `jeunes_ajouts.json`, même format, repris à chaque relance.
+- `jeunes.json` : généré par `python3 trouver_jeunes.py`. Jeunes = catégories avant seniors (jusqu'aux juniors, moins de 19 ans). L'API ne donne pas l'âge : le script prend tous les joueurs SQY des feuilles de match et repère les jeunes par les compétitions réservées à un âge (Critérium fédéral « Moins de N ans », Top Jeunes, Championnat des Jeunes). Les joueurs sans indice d'âge vont dans `jeunes_a_verifier.json` ; un jeune parmi eux est à mettre dans `jeunes_ajouts.json` (`[{"licence": "...", "nom": "..."}]`), repris à chaque relance.
 - `bareme.json` (versionné) : la grille de l'article IV.205.1, recopiée du texte de juillet 2021, à confirmer pour 2026-2027.
 
 Toutes les parties de simple de la saison sont comptées (`/api/games`) : championnat, tournois, critérium. Chaque résultat est multiplié par le coefficient de sa compétition, lu dans l'API. C'est une estimation : l'API ne fournit pas les points mensuels de référence, on prend les points affichés dans chaque partie.
