@@ -1,14 +1,10 @@
-import json,urllib.request,os,time,datetime
+import json,os,time,datetime
+import fftt_api
 CACHE="cache"
 def g(p,cache=True):
     f=os.path.join(CACHE,p.replace("/","_").replace("?","_")[:200]+".json")
     if cache and os.path.exists(f): return json.load(open(f))
-    r=urllib.request.Request("https://apiv2.fftt.com"+p,headers={"Accept":"application/ld+json"})
-    for i in range(3):
-        try: d=json.load(urllib.request.urlopen(r,timeout=90)); break
-        except Exception as e:
-            if i==2: raise
-            time.sleep(3)
+    d=fftt_api.get(p,retries=2)
     time.sleep(0.15)
     if cache: json.dump(d,open(f,"w"))
     return d

@@ -1,15 +1,11 @@
-import json,glob,os,time,urllib.request,collections,datetime,sys,re
+import json,glob,os,time,collections,datetime,sys,re
 from concurrent.futures import ThreadPoolExecutor
+import fftt_api
 CACHE="cache"; TODAY=datetime.date.today().isoformat()
 def g(p):
     f=os.path.join(CACHE,p.replace("/","_").replace("?","_")[:200]+".json")
     if os.path.exists(f): return json.load(open(f))
-    r=urllib.request.Request("https://apiv2.fftt.com"+p,headers={"Accept":"application/ld+json"})
-    for i in range(4):
-        try: d=json.load(urllib.request.urlopen(r,timeout=90)); break
-        except Exception as e:
-            if i==3: raise
-            time.sleep(5*(i+1))
+    d=fftt_api.get(p,retries=3,pause=5)
     time.sleep(0.15); json.dump(d,open(f,"w")); return d
 def num(name):
     m=re.findall(r"(\d+)",name or ""); return int(m[-1]) if m else 99

@@ -3,15 +3,15 @@
 # Usage : bash monclub/update.sh   (le site autonome est écrit dans monclub/site/index.html)
 set -euo pipefail
 cd "$(dirname "$0")"
+: "${FFTT_LICENCE_USER:?définir FFTT_LICENCE_USER (identifiant monclub)}"
+: "${FFTT_LICENCE_PWD:?définir FFTT_LICENCE_PWD (mot de passe monclub)}"
 
 rm -rf cache && mkdir -p cache site
 
 echo "== 1/7 Poules de SQY Ping (saison en cours)"
 python3 - <<'EOF'
-import json, urllib.request
-r = urllib.request.Request("https://apiv2.fftt.com/api/pools?group.tour.division.contest.season.current=true&itemsPerPage=100&poolOpponents.opponent.team.clubs.id=40001473",
-                           headers={"Accept": "application/ld+json"})
-d = json.load(urllib.request.urlopen(r, timeout=90))
+import json, fftt_api
+d = fftt_api.get("/api/pools?group.tour.division.contest.season.current=true&itemsPerPage=100&poolOpponents.opponent.team.clubs.id=40001473")
 json.dump(d, open("sqy_pools.json", "w"))
 print(d["hydra:totalItems"], "poules")
 EOF
