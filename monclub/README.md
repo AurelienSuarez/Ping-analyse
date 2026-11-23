@@ -1,12 +1,19 @@
 # Récap des classements SQY Ping (API monclub FFTT)
 
 Source : `apiv2.fftt.com`, l'API qui alimente monclub.fftt.com. Non documentée, elle peut changer.
+
+**Authentification obligatoire** (les requêtes anonymes sont refusées depuis novembre 2026) : exportez vos identifiants monclub avant de lancer les scripts.
+
+    export FFTT_LICENCE_USER='votre identifiant'
+    export FFTT_LICENCE_PWD='votre mot de passe'
+
+Tous les appels passent par `fftt_api.py` (`POST /api/login_check`, scope `licence`). Le jeton dure 10 minutes : il reste en mémoire et il est renouvelé automatiquement.
 Club SQY PING : n° FFTT `08781477`, id API `40001473`.
 
 À lancer depuis ce dossier :
 
     # 1. lister les poules de la saison en cours
-    python3 -c "import json,urllib.request as u;r=u.Request('https://apiv2.fftt.com/api/pools?group.tour.division.contest.season.current=true&itemsPerPage=100&poolOpponents.opponent.team.clubs.id=40001473',headers={'Accept':'application/ld+json'});json.dump(json.load(u.urlopen(r)),open('sqy_pools.json','w'))"
+    python3 -c "import json,fftt_api;json.dump(fftt_api.get('/api/pools?group.tour.division.contest.season.current=true&itemsPerPage=100&poolOpponents.opponent.team.clubs.id=40001473'),open('sqy_pools.json','w'))"
     # 2. récupérer les scores (mis en cache dans cache/ : videz-le pour rafraîchir)
     mkdir -p cache && python3 collect.py
     # 3. calculer les classements, puis générer la page
@@ -41,3 +48,14 @@ Pour le mettre à jour après un nouveau calcul :
 ## Corrections manuelles
 
 `overrides.json` : joueurs à ajouter à la main (recrue sans feuille de match, etc.), avec leurs points et leur probabilité de présence.
+
+## Progression des jeunes (classement virtuel, tournois compris)
+
+    python3 progression.py --du 2026-10-01 --au 2026-11-30             # affiche le classement et le podium
+    python3 progression.py --du 2026-10-01 --au 2026-11-30 --discord   # l'envoie aussi (webhook dans DISCORD_WEBHOOK_URL)
+
+À fournir dans ce dossier (non versionnés) :
+- `jeunes.json` : généré par `python3 trouver_jeunes.py`. Jeunes = catégories avant seniors (jusqu'aux juniors, moins de 19 ans). L'API ne donne pas l'âge : le script prend tous les joueurs SQY des feuilles de match et repère les jeunes par les compétitions réservées à un âge (Critérium fédéral « Moins de N ans », Top Jeunes, Championnat des Jeunes). Les joueurs sans indice d'âge vont dans `jeunes_a_verifier.json` ; un jeune parmi eux est à mettre dans `jeunes_ajouts.json` (`[{"licence": "...", "nom": "..."}]`), repris à chaque relance.
+- `bareme.json` (versionné) : la grille de l'article IV.205.1, recopiée du texte de juillet 2021, à confirmer pour 2026-2027.
+
+Toutes les parties de simple de la saison sont comptées (`/api/games`) : championnat, tournois, critérium. Chaque résultat est multiplié par le coefficient de sa compétition, lu dans l'API. C'est une estimation : l'API ne fournit pas les points mensuels de référence, on prend les points affichés dans chaque partie.

@@ -3,6 +3,8 @@
 # Usage : bash monclub/update.sh   (le site autonome est écrit dans monclub/site/index.html)
 set -euo pipefail
 cd "$(dirname "$0")"
+: "${FFTT_LICENCE_USER:?définir FFTT_LICENCE_USER (identifiant monclub)}"
+: "${FFTT_LICENCE_PWD:?définir FFTT_LICENCE_PWD (mot de passe monclub)}"
 
 rm -rf cache && mkdir -p cache site
 

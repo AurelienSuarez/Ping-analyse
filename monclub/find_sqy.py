@@ -1,7 +1,5 @@
-import fftt_api
-import json,urllib.request,urllib.parse
-def g(p):
-    return fftt_api.get(p)
+import json
+from fftt_api import get as g
 base="/api/pools?group.tour.division.contest.season.current=true&itemsPerPage=1&"
 d=g(base+"poolOpponents.opponent.team.clubs.id=12920018"); print("test malakoff",d["hydra:totalItems"])
 found={}

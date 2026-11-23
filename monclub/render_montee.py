@@ -48,6 +48,9 @@ RELIAB=(f'<section class="notes"><h2>Le modèle est-il fiable ?</h2><p>Test sur 
  f'<p>Plus les deux dernières colonnes sont proches, plus le modèle est fiable. Les écarts de quelques points sont normaux avec une cinquantaine de rencontres par ligne. Seul défaut connu : le modèle prévoit un peu trop de matchs nuls ({round(CR["draw_pred"]*100)} % contre {round(CR["draw_real"]*100)} % en réalité).</p></section>')
 fav=sum(1 for r in rows if r["s"]["up"]>=0.5); course=sum(1 for r in rows if 0.1<=r["s"]["up"]<0.5)
 today=datetime.date.today().strftime("%d/%m/%Y")
+# journées : dernière journée jouée (une rencontre en retard ailleurs est simulée), sur le nombre total
+nb_journees=max((m["round"] or 0) for p in site for m in p["played"]+p["future"])
+jouees=max((m["round"] or 0) for p in site for m in p["played"])
 head='<thead><tr><th>Équipe</th><th>Division</th><th class="c">Clt (retard)</th><th>Montée</th><th>Pour monter</th></tr></thead>'
 page=f'''<title>Montées SQY Ping</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -78,7 +81,7 @@ td{{padding:8px 10px;border-bottom:1px solid var(--line)}} tr:last-child td{{bor
 </style>
 <div class="wrap">
 <header><h1>Qui peut monter à SQY Ping ?</h1>
-<p class="lede">Équipes seniors · championnat par équipes 2026-2027, phase 1 · après 3 journées sur 7 · données du {today}</p></header>
+<p class="lede">Équipes seniors · championnat par équipes 2026-2027, phase 1 · après {jouees} journée{'s' if jouees>1 else ''} sur {nb_journees} · données du {today}</p></header>
 <div class="facts"><span><b>{fav}</b> équipes favorites pour la montée (50 % ou plus)</span><span><b>{course}</b> encore dans la course (10 à 50 %)</span></div>
 <section><h2>Messieurs</h2><div class="tw"><table>{head}<tbody>{table(False)}</tbody></table></div></section>
 <section><h2>Dames</h2><div class="tw"><table>{head}<tbody>{table(True)}</tbody></table></div></section>

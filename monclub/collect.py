@@ -1,10 +1,11 @@
+import json,os,time,datetime
 import fftt_api
-import json,urllib.request,os,time,datetime
 CACHE="cache"
 def g(p,cache=True):
     f=os.path.join(CACHE,p.replace("/","_").replace("?","_")[:200]+".json")
     if cache and os.path.exists(f): return json.load(open(f))
-    d=fftt_api.get(p)
+    d=fftt_api.get(p,retries=2)
+    time.sleep(0.15)
     if cache: json.dump(d,open(f,"w"))
     return d
 pools=json.load(open("sqy_pools.json"))["hydra:member"]

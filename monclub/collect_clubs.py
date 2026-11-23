@@ -1,11 +1,12 @@
-import fftt_api
-import json,glob,os,time,urllib.request,collections,datetime,sys,re
+import json,glob,os,time,collections,datetime,sys,re
 from concurrent.futures import ThreadPoolExecutor
+import fftt_api
 CACHE="cache"; TODAY=datetime.date.today().isoformat()
 def g(p):
     f=os.path.join(CACHE,p.replace("/","_").replace("?","_")[:200]+".json")
     if os.path.exists(f): return json.load(open(f))
-    d=fftt_api.get(p); json.dump(d,open(f,"w")); return d
+    d=fftt_api.get(p,retries=3,pause=5)
+    time.sleep(0.15); json.dump(d,open(f,"w")); return d
 def num(name):
     m=re.findall(r"(\d+)",name or ""); return int(m[-1]) if m else 99
 # numéro max utile par club et par genre : équipe présente dans une poule SQY, +1 pour les renforts

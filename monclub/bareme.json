@@ -1,0 +1,68 @@
+{
+ "source": "RG FFTT art. IV.205.1 (texte de juillet 2021, à confirmer pour 2026-2027)",
+ "lignes": [
+  {
+   "ecart_max": 24,
+   "victoire_normale": 6,
+   "defaite_normale": 5,
+   "victoire_anormale": 6,
+   "defaite_anormale": 5
+  },
+  {
+   "ecart_max": 49,
+   "victoire_normale": 5.5,
+   "defaite_normale": 4.5,
+   "victoire_anormale": 7,
+   "defaite_anormale": 6
+  },
+  {
+   "ecart_max": 99,
+   "victoire_normale": 5,
+   "defaite_normale": 4,
+   "victoire_anormale": 8,
+   "defaite_anormale": 7
+  },
+  {
+   "ecart_max": 149,
+   "victoire_normale": 4,
+   "defaite_normale": 3,
+   "victoire_anormale": 10,
+   "defaite_anormale": 8
+  },
+  {
+   "ecart_max": 199,
+   "victoire_normale": 3,
+   "defaite_normale": 2,
+   "victoire_anormale": 13,
+   "defaite_anormale": 10
+  },
+  {
+   "ecart_max": 299,
+   "victoire_normale": 2,
+   "defaite_normale": 1,
+   "victoire_anormale": 17,
+   "defaite_anormale": 12.5
+  },
+  {
+   "ecart_max": 399,
+   "victoire_normale": 1,
+   "defaite_normale": 0.5,
+   "victoire_anormale": 22,
+   "defaite_anormale": 16
+  },
+  {
+   "ecart_max": 499,
+   "victoire_normale": 0.5,
+   "defaite_normale": 0,
+   "victoire_anormale": 28,
+   "defaite_anormale": 20
+  },
+  {
+   "ecart_max": null,
+   "victoire_normale": 0,
+   "defaite_normale": 0,
+   "victoire_anormale": 40,
+   "defaite_anormale": 29
+  }
+ ]
+}
