@@ -1,10 +1,10 @@
+import fftt_api
 import json,os,glob,random,re,datetime,collections,urllib.request,time
 CACHE="cache"; TODAY=datetime.date.today().isoformat()
 def g(p):
     f=os.path.join(CACHE,p.replace("/","_").replace("?","_")[:200]+".json")
     if os.path.exists(f): return json.load(open(f))
-    r=urllib.request.Request("https://apiv2.fftt.com"+p,headers={"Accept":"application/ld+json"})
-    d=json.load(urllib.request.urlopen(r,timeout=90)); time.sleep(0.15)
+    d=fftt_api.get(p)
     json.dump(d,open(f,"w")); return d
 pools=json.load(open("sqy_pools.json"))["hydra:member"]
 def lvl(d):

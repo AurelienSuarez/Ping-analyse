@@ -8,10 +8,8 @@ rm -rf cache && mkdir -p cache site
 
 echo "== 1/7 Poules de SQY Ping (saison en cours)"
 python3 - <<'EOF'
-import json, urllib.request
-r = urllib.request.Request("https://apiv2.fftt.com/api/pools?group.tour.division.contest.season.current=true&itemsPerPage=100&poolOpponents.opponent.team.clubs.id=40001473",
-                           headers={"Accept": "application/ld+json"})
-d = json.load(urllib.request.urlopen(r, timeout=90))
+import json, fftt_api
+d = fftt_api.get("/api/pools?group.tour.division.contest.season.current=true&itemsPerPage=100&poolOpponents.opponent.team.clubs.id=40001473")
 json.dump(d, open("sqy_pools.json", "w"))
 print(d["hydra:totalItems"], "poules")
 EOF
@@ -49,6 +47,7 @@ echo "== 7/7 Pages"
 python3 render_montee.py > /dev/null
 python3 comments.py
 python3 weekly_summary.py
+python3 team_cards.py
 python3 combine.py > /dev/null
 python3 make_standalone.py enjeux-sqy-ping.html site/index.html
 printf "User-agent: *\nDisallow: /\n" > site/robots.txt

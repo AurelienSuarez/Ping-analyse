@@ -1,0 +1,49 @@
+name: Mettre à jour le site
+
+# Lancement à la main (bouton « Run workflow ») et chaque dimanche soir après les journées du week-end.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 20 * * 0"   # dimanche 20h17 UTC (21h17 heure de Paris l'hiver)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-site
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Collecte FFTT, calibrage, simulation et pages
+        env:
+          FFTT_LICENCE_USER: ${{ secrets.FFTT_LICENCE_USER }}
+          FFTT_LICENCE_PWD: ${{ secrets.FFTT_LICENCE_PWD }}
+        run: bash monclub/update.sh
+
+      - name: Enregistre l'historique et les pages dans le dépôt
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
+          git add monclub/history monclub/*.html
+          git commit -m "Mise à jour automatique du $(date +%d/%m/%Y)" || echo "Rien à enregistrer"
+          git push
+
+      - name: Publie le site sur GitHub Pages (branche gh-pages)
+        run: |
+          git fetch origin gh-pages
+          git worktree add ../gh-pages origin/gh-pages
+          cp -a monclub/site/. ../gh-pages/
+          cd ../gh-pages
+          git add -A
+          git commit -m "Mise à jour du site du $(date +%d/%m/%Y)" || { echo "Site inchangé"; exit 0; }
+          git push origin HEAD:gh-pages
