@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
-          git add monclub/history monclub/*.html
+          git add monclub/history monclub/enjeux-sqy-ping.html monclub/montees-sqy-ping.html monclub/maintien-sqy-ping.html
           git commit -m "Mise à jour automatique du $(date +%d/%m/%Y)" || echo "Rien à enregistrer"
           git push
 

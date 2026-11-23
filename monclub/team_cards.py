@@ -31,10 +31,13 @@ for p in site:
         T = p["teams"][tid]; num = int(re.search(r"(\d+)\s*$", T["name"]).group(1))
         lab = ("Dames " if p["fem"] else "SQY ") + str(num)
         rk = rank(p, tid); n = p["n"]; upn = p.get("upn", 1)
+        tie = sum(1 for v in p["teams"].values() if v["pts"] == T["pts"]) > 1
         if s["up"] >= 0.5: stake, cls = f"En course pour la montée ({pc(s['up'])})", "ok"
         elif s["down"] >= 0.3: stake, cls = f"Maintien en danger (descente {pc(s['down'])})", "bad"
         elif s["up"] >= 0.1: stake, cls = f"Peut encore viser la montée ({pc(s['up'])})", "mid"
         elif s["down"] >= 0.1: stake, cls = f"Doit encore assurer le maintien (descente {pc(s['down'])})", "warn"
+        elif rk <= upn + 1: stake, cls = f"Dans le haut du classement, mais la montée semble hors de portée ({pc(s['up'])})", "mid"
+        elif rk > n - p["down"] - 1: stake, cls = f"Bas de classement, mais le maintien semble assuré (descente {pc(s['down'])})", "mid"
         else: stake, cls = "Phase sans grand enjeu : milieu de tableau", "mid"
         mine, myavg = lineup((p.get("compo") or {}).get(tid))
         c = (p.get("compo") or {}).get(tid) or {}
@@ -57,7 +60,7 @@ for p in site:
             lines.insert(0, "<p><b>Phase terminée</b> pour cette équipe.</p>")
         cards.append(((p["fem"], num), f'''<article class="tc" id="eq-{"f" if p["fem"] else "m"}{num}">
 <header><h3>{lab} <span class="muted">· {esc(p["division"])} · poule {esc(p["pool"])}</span></h3>
-<div class="tcpills"><span class="pill mid">{place(rk)} / {n} · {T["pts"]} pts ({T["V"]}V {T["N"]}N {T["D"]}D)</span><span class="pill {cls}">{stake}</span></div></header>
+<div class="tcpills"><span class="pill mid">{place(rk)}{" ex æquo" if tie else ""} / {n} · {T["pts"]} pts ({T["V"]}V {T["N"]}N {T["D"]}D)</span><span class="pill {cls}">{stake}</span></div></header>
 {"".join(lines)}
 </article>'''))
 
